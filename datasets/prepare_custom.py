@@ -13,7 +13,7 @@ def get_custom_dataset(label, target):
     all_image = get_all_image_files(os.path.join(DATASET_ROOT, target))
     dataset_dicts = []
     labels = get_target_labels()[label]
-    print(f'[Petopia] Prepare custom dataset - target: {target}, labels:{labels}')
+    print(f' Prepare custom dataset - target: {target}, labels:{labels}')
 
     for image_id, image_file in enumerate(all_image):
         name, ext = os.path.splitext(image_file)

@@ -27,12 +27,12 @@ target = 'multi'
 
 def set_dataset():
     for d in ["train", "test"]:
-        DatasetCatalog.register("petopia/" + d, lambda d=d: get_custom_dataset(target, "petopia/" + d))
-        MetadataCatalog.get("petopia/" + d).set(thing_classes=get_target_labels()[target])
+        DatasetCatalog.register("custom/" + d, lambda d=d: get_custom_dataset(target, "custom/" + d))
+        MetadataCatalog.get("custom/" + d).set(thing_classes=get_target_labels()[target])
 
 
 def set_config_custom(output_folder, mode, now_date):
-    logger.debug(f"[Petopia] Set configs")
+    logger.debug(f" Set configs")
     config_custom = {
         'DATASET': '20200625_103328_8posture',
         'AUG_IN_DATASET': 'X',
@@ -84,7 +84,7 @@ def set_config_all(cfg, config_custom, output_folder, mode, now_date):
     # cfg.merge_from_file(model_zoo.get_config_file("COCO-Detection/faster_rcnn_R_50_FPN_3x.yaml"))
     # cfg.MODEL.WEIGHTS = "detectron2://COCO-Detection/faster_rcnn_R_50_FPN_3x/137849458/model_final_280758.pkl"
 
-    cfg.DATASETS.TRAIN = ("petopia/train",)
+    cfg.DATASETS.TRAIN = ("custom/train",)
     cfg.DATASETS.TEST = ()
     # cfg.DATASETS.TEST = ()  # no metrics implemented for this dataset
     cfg.DATALOADER.NUM_WORKERS = config_custom['NUM_WORKERS']
@@ -118,7 +118,7 @@ def set_config_all(cfg, config_custom, output_folder, mode, now_date):
 
 
 def train_model(cfg, output_folder, mode, now_date):
-    logger.debug(f"[Petopia] Start train model")
+    logger.debug(f" Start train model")
     trainer = DefaultTrainer(cfg)
     trainer.resume_or_load(resume=False)
     trainer.train()
@@ -131,27 +131,27 @@ def train_model(cfg, output_folder, mode, now_date):
     seq_path = os.path.join(output_folder, f"{now_date}_{mode}", f'config_custom.txt')
     wf = open(seq_path, 'a', newline='', encoding='utf-8')
     wf.write(f'END_TIME_TRAIN: {str(datetime.now())}\n')
-    logger.debug(f"[Petopia] End to train:{str(datetime.now())}")
+    logger.debug(f" End to train:{str(datetime.now())}")
     wf.close()
 
     return True
 
 
 def make_prediction_image(cfg, output_folder, mode, now_date):
-    logger.debug(f"[Petopia] Start evaluating image")
+    logger.debug(f" Start evaluating image")
     os.makedirs(os.path.join(output_folder, f"{now_date}_{mode}", f"prediction_{target}"), exist_ok=True)
 
     cfg.MODEL.WEIGHTS = os.path.join(output_folder, "model_final.pth")
     cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.7  # set the testing threshold for this model
-    cfg.DATASETS.TEST = ("petopia/test",)
+    cfg.DATASETS.TEST = ("custom/test",)
 
     # Evaluate test datasets
     model = DefaultTrainer(cfg).build_model(cfg)
     DetectionCheckpointer(model, save_dir=output_folder).resume_or_load(cfg.MODEL.WEIGHTS, resume=False)
 
-    evaluator = COCOEvaluator("petopia/test", cfg, False,
+    evaluator = COCOEvaluator("custom/test", cfg, False,
                               output_dir=os.path.join(output_folder, f"{now_date}_{mode}", 'COCO_eval'))
-    val_loader = build_detection_test_loader(cfg, "petopia/test")
+    val_loader = build_detection_test_loader(cfg, "custom/test")
     order_dicts = inference_on_dataset(DefaultTrainer(cfg).model, val_loader, evaluator)
 
     seq_path = os.path.join(output_folder, f"{now_date}_{mode}", f'eval_result.txt')
@@ -161,7 +161,7 @@ def make_prediction_image(cfg, output_folder, mode, now_date):
 
     # Predict test dataset
     predictor = DefaultPredictor(cfg)
-    dataset_dicts = get_petopia_custom_dataset(target, "petopia/test")
+    dataset_dicts = get_custom_dataset(target, "custom/test")
     for i, d in enumerate(dataset_dicts):
         logger.debug(f"predicting...{d['file_name']}")
         im = cv2.imread(d["file_name"])
@@ -171,7 +171,7 @@ def make_prediction_image(cfg, output_folder, mode, now_date):
         ## 1 https://rosenfelder.ai/Instance_Image_Segmentation_for_Window_and_Building_Detection_with_detectron2/
         v = Visualizer(
             im[:, :, ::-1],
-            metadata=MetadataCatalog.get("petopia/test"),
+            metadata=MetadataCatalog.get("custom/test"),
             scale=1,
             instance_mode=ColorMode.IMAGE_BW,  # remove the colors of unsegmented pixels
         )
@@ -180,12 +180,12 @@ def make_prediction_image(cfg, output_folder, mode, now_date):
         cv2.imwrite(os.path.join(output_folder, f"{now_date}_{mode}", f"prediction_{target}", file_name),
                     v.get_image())
 
-    logger.debug(f"[Petopia] End evaluating image")
+    logger.debug(f" End evaluating image")
 
     seq_path = os.path.join(output_folder, f"{now_date}_{mode}", f'config_custom.txt')
     wf = open(seq_path, 'a', newline='', encoding='utf-8')
     wf.write(f'END_TIME_EVAL_IMAGE: {str(datetime.now())}\n')
-    logger.debug(f"[Petopia] End to train:{str(datetime.now())}")
+    logger.debug(f" End to train:{str(datetime.now())}")
     wf.close()
 
     return True
@@ -193,10 +193,10 @@ def make_prediction_image(cfg, output_folder, mode, now_date):
 
 # https://stackoverflow.com/questions/60663073/how-can-i-properly-run-detectron2-on-videos
 def make_prediction_video(cfg, output_folder, mode, now_date):
-    logger.debug(f"[Petopia] Start evaluating video")
+    logger.debug(f" Start evaluating video")
 
     # Extract video properties
-    video = cv2.VideoCapture('/home/petopia-01/git/detectron2/test_video.mp4')
+    video = cv2.VideoCapture('./test_video.mp4')
     width = int(video.get(cv2.CAP_PROP_FRAME_WIDTH))
     height = int(video.get(cv2.CAP_PROP_FRAME_HEIGHT))
     frames_per_second = video.get(cv2.CAP_PROP_FPS)
@@ -210,11 +210,11 @@ def make_prediction_video(cfg, output_folder, mode, now_date):
     # Initialize predictor
     cfg.MODEL.WEIGHTS = os.path.join(output_folder, "model_final.pth")
     cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.7  # set the testing threshold for this model
-    cfg.DATASETS.TEST = ("petopia/test",)
+    cfg.DATASETS.TEST = ("custom/test",)
     predictor = DefaultPredictor(cfg)
 
     # Initialize visualizer
-    v = VideoVisualizer(MetadataCatalog.get("petopia/test"), ColorMode.IMAGE)
+    v = VideoVisualizer(MetadataCatalog.get("custom/test"), ColorMode.IMAGE)
 
     # Create a cut-off for debugging
     # num_frames = 5000
@@ -231,12 +231,12 @@ def make_prediction_video(cfg, output_folder, mode, now_date):
     video.release()
     video_writer.release()
     # cv2.destroyAllWindows()
-    logger.debug(f"[Petopia] End evaluating video")
+    logger.debug(f" End evaluating video")
 
     seq_path = os.path.join(output_folder, f"{now_date}_{mode}", f'config_custom.txt')
     wf = open(seq_path, 'a', newline='', encoding='utf-8')
     wf.write(f'END_TIME_EVAL_VIDEO: {str(datetime.now())}\n')
-    logger.debug(f"[Petopia] End to train:{str(datetime.now())}")
+    logger.debug(f" End to train:{str(datetime.now())}")
     wf.close()
 
     return True

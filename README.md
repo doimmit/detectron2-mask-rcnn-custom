@@ -2,17 +2,17 @@
 - Customizing image datasets as COCO format
 - Trainning rcnn model with custom dataset
 ---
-###1. Prepare (for building detectron2)
+### 1. Prepare (for building detectron2)
 - python >= 3.6
 - pytorch >= 1.4
 - torchvision
 - gcc & g++ >= 5
- ```
-conda create -n detectron2 python=3.7
-conda install pytorch torchvision cudatoolkit=10.2 -c pytorch
-conda install opencv
-```
-###2. Build detectron2
+     ```
+    conda create -n detectron2 python=3.7
+    conda install pytorch torchvision cudatoolkit=10.2 -c pytorch
+    conda install opencv
+    ```
+### 2. Build detectron2
 - Refer to : https://github.com/facebookresearch/detectron2/blob/master/INSTALL.md
 - server
     ```
@@ -28,16 +28,16 @@ conda install opencv
      CC=clang CXX=clang++ python -m pip install -e .
     ```
 
-###3. Customizing dataset
+### 3. Customizing dataset
 - Refer COCO format : https://github.com/facebookresearch/detectron2/blob/master/docs/tutorials/datasets.md 
 - Transform data format of 'custom csv file' to COCO format
 - code: /datasets/prepare_custom.py
     
-###4. Register dataset and setting label
+### 4. Register dataset and setting label
 - Register dataset function to detectron2.data.DatasetCatalog, and then you can train model with custom data.
 - code: /train_rcnn.py - set_dataset()
     
-###5. Edit config value
+### 5. Edit config value
 - Edit your custom config value such like that (default):
     - NUM_WORKERS : 2
     - IMS_PER_BATCH : 2
@@ -47,13 +47,13 @@ conda install opencv
     - MODEL_WEIGHTS : 'COCO-InstanceSegmentation/mask_rcnn_R_101_FPN_3x.yaml'
 - code: /train_rcnn.py - set_config_custom()
 
-###6. Run trainning
+### 6. Run trainning
 - You can train custom model as running this batch file : ./ptrain.bat
 - After trainnnig model, If you want only evaluate image or video, you can just run batch file :
     - image eval : ./ppredict_image.bat
     - video eval : ./ppredict_video.bat
     
-###7. Confirm results
+### 7. Confirm results
 - After done, the result files in output folder(such as './output_20200101_0000') such like that:
      ```
      20200625_1445_train/
