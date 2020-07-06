@@ -41,7 +41,7 @@ def set_config_custom(output_folder, mode, now_date):
         # 2
         # Number of data loading threads
 
-        'IMS_PER_BATCH': 4,
+        'IMS_PER_BATCH': 2,
         # 2
         # Number of images per batch across all machines.
         # If we have 16 GPUs and IMS_PER_BATCH = 32,
@@ -50,7 +50,7 @@ def set_config_custom(output_folder, mode, now_date):
         'BASE_LR': 0.00025,
         # 0.00025
 
-        'MAX_ITER': 20000,
+        'MAX_ITER': 30000,
         # 40000
 
         'BATCH_SIZE_PER_IMAGE': 512,
@@ -59,7 +59,7 @@ def set_config_custom(output_folder, mode, now_date):
         # Total number of RoIs per training minibatch =
         #   ROI_HEADS.BATCH_SIZE_PER_IMAGE * SOLVER.IMS_PER_BATCH
         # E.g., a common configuration is: 512 * 16 = 8192
-        'MODEL_WEIGHTS': 'COCO-InstanceSegmentation/mask_rcnn_R_101_FPN_3x.yaml',
+        'MODEL_WEIGHTS': 'COCO-InstanceSegmentation/mask_rcnn_X_101_32x8d_FPN_3x.yaml',
         'TEST_EVAL_PERIOD': 100
     }
     os.makedirs(os.path.join(output_folder, f'{now_date}_{mode}'), exist_ok=True)

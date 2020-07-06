@@ -52,44 +52,28 @@ def get_custom_dataset(label, target):
                         "iscrowd": 0
                     }
                     if label == 'multi':
-                        multi = False
-                        if len(line) > 5 and line[4] is not None and line[5] is not None:
-                            multi = True
-                            obj["category_id"] = 0
-                            multi_id = 0
+                        if len(line) > 5 and line[4] is not None:
                             if line[4] in labels:
                                 obj["category_id"] = labels.index(line[4])
-                            if line[5] in labels:
-                                multi_id = labels.index(line[5])
-                            objs.append(obj)
+                                objs.append(obj)
 
-                        if multi is True:
-                            objs.append({
-                                "bbox": [xmin, ymin, xmax, ymax],
-                                "bbox_mode": BoxMode.XYXY_ABS,
-                                "segmentation": [poly],
-                                "category_id": multi_id,  # temp
-                                "iscrowd": 0
-                            })
+                        if len(line) == 5 and line[4] is not None:
+                            if line[4] in labels:
+                                obj["category_id"] = labels.index(line[4])
+                                objs.append(obj)
                     else:
                         if label == 'posture' and len(line) > 5 and line[4] is not None:
                             if line[4] in labels:
                                 obj["category_id"] = labels.index(line[4])
-                            else:
-                                obj["category_id"] = 0
-                            objs.append(obj)
+                                objs.append(obj)
                         elif label == 'action' and len(line) > 5 and line[5] is not None:
                             if line[5] in labels:
                                 obj["category_id"] = labels.index(line[5])
-                            else:
-                                obj["category_id"] = 0
-                            objs.append(obj)
+                                objs.append(obj)
                         elif label == 'object' and len(line) == 5 and line[4] is not None:
                             if line[4] in labels:
                                 obj["category_id"] = labels.index(line[4])
-                            else:
-                                obj["category_id"] = 0
-                            objs.append(obj)
+                                objs.append(obj)
 
             record["annotations"] = objs
             dataset_dicts.append(record)
@@ -125,5 +109,5 @@ def get_target_labels():
         'posture': get_labels(os.path.join(DATASET_ROOT, posture_file)),
         'action': get_labels(os.path.join(DATASET_ROOT, action_file)),
         'object': get_labels(os.path.join(DATASET_ROOT, object_file)),
-        'multi': get_labels(os.path.join(DATASET_ROOT, posture_file)) + get_labels(os.path.join(DATASET_ROOT, action_file))
+        'multi': get_labels(os.path.join(DATASET_ROOT, posture_file)) + get_labels(os.path.join(DATASET_ROOT, object_file))
     }
